@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+options = {}
+
+OptionParser.new do |opt|
+  opt.banner = "Usage: console [environment] [options]"
+  opt.on("-e", "--environment=name", String,
+          "Specifies the environment to run this console under (test/development/production).",
+          "Default: development") { |v| options[:environment] = v.strip }
+  opt.on("-d", "--debugger", 'Enable the debugger.') { |v| options[:debugger] = v }
+  opt.parse!(ARGV)
+end
+
+if ARGV.first && ARGV.first[0] != '-'
+  env = ARGV.first
+  options[:environment] = env
+  ARGV.shift
+end
+
+ENV["RUBY_ENV"] = options[:environment] if options[:environment]
+
+if options[:debugger]
+  require 'ruby-debug' 
+  puts "=> Debugger enabled"
+end
+
+require File.expand_path('../../config/environment', __FILE__)
+
+require 'irb'
+require 'irb/completion'
+
+IRB.start
