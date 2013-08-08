@@ -18,7 +18,11 @@ module AmqpExample
 	 
 	  def start
 	    @queue = @channel.queue(@queue_name, :exclusive => false)
-	    @queue.subscribe(&@consumer.method(:handle_message))
+	    @channel.prefetch(1)
+	    @queue.subscribe(:ack => true) do |metadata, payload|
+	    	@consumer.handle_message(metadata, payload)
+	    	metadata.ack
+	    end
 	  end
 	 
 	  def handle_channel_exception(channel, channel_close)
